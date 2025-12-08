@@ -1,0 +1,28 @@
+class CuentaBancaria:
+    def __init__(self, titular, saldo_inicial=0):
+        self.titular = titular
+        self.__saldo = saldo_inicial  # Atributo privado
+    
+    def depositar(self, monto):
+        if monto > 0:
+            self.__saldo += monto
+        else:
+            print("Monto inválido.")
+    
+    def retirar(self, monto):
+        if 0 < monto <= self.__saldo:
+            self.__saldo -= monto
+        else:
+            print("Monto inválido o saldo insuficiente.")
+    
+    def get_saldo(self):
+        return self.__saldo
+
+# Uso
+cuenta = CuentaBancaria("Juan Pérez", 1000)
+cuenta.depositar(500)
+print(f"Saldo actual: {cuenta.get_saldo()}")  # Salida: Saldo actual: 1500
+
+cuenta.retirar(2000)  # Salida: Monto inválido o saldo insuficiente.
+# cuenta.__saldo = -100  # Esto no afecta el saldo real debido a la encapsulación (name mangling)
+print(f"Saldo actual: {cuenta.get_saldo()}")  # Salida: Saldo actual: 1500

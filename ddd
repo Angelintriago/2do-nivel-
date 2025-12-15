@@ -1,0 +1,81 @@
+# promedio_clima_poo.py
+class DiaClima:
+    """Representa el clima de un solo día"""
+    def __init__(self, nombre_dia, temperatura=None):
+        self._nombre_dia = nombre_dia          # encapsulamiento con _
+        self._temperatura = temperatura
+        
+    # Getter y Setter (encapsulamiento)
+    @property
+    def temperatura(self):
+        return self._temperatura
+    
+    @temperatura.setter
+    def temperatura(self, valor):
+        if not isinstance(valor, (int, float)):
+            raise ValueError("La temperatura debe ser numérica")
+        self._temperatura = float(valor)
+    
+    def __str__(self):
+        if self._temperatura is None:
+            return f"{self._nombre_dia}: Sin dato"
+        return f"{self._nombre_dia}: {self._temperatura:.1f} °C"
+
+
+class SemanaClima:
+    """Representa una semana completa de datos climáticos"""
+    DIAS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
+    
+    def __init__(self):
+        # Creamos 7 objetos DiaClima (composición)
+        self.dias = [DiaClima(dia) for dia in self.DIAS]
+    
+    def ingresar_temperaturas(self):
+        """Pide al usuario las temperaturas día por día"""
+        print("=== INGRESO DE TEMPERATURAS SEMANALES (POO) ===")
+        for dia_obj in self.dias:
+            while True:
+                try:
+                    temp = float(input(f"Temperatura del {dia_obj._nombre_dia} (°C): "))
+                    dia_obj.temperatura = temp
+                    break
+                except ValueError as e:
+                    print(e if "numérica" in str(e) else "Entrada inválida, intente nuevamente.")
+    
+    def calcular_promedio(self):
+        """Calcula el promedio de las temperaturas registradas"""
+        temps = [dia.temperatura for dia in self.dias if dia.temperatura is not None]
+        return sum(temps) / len(temps) if temps else 0
+    
+    def mostrar_resumen(self):
+        """Muestra todo el resumen semanal"""
+        print("\n=== RESUMEN SEMANAL DEL CLIMA (POO) ===")
+        for dia in self.dias:
+            print(dia)
+        print("-" * 35)
+        print(f"PROMEDIO SEMANAL: {self.calcular_promedio():.2f} °C")
+
+
+# Ejemplo de herencia (opcional, para mostrar el concepto)
+class SemanaClimaExtendida(SemanaClima):
+    """Hereda de SemanaClima y agrega funcionalidad extra"""
+    def dia_mas_calido(self):
+        validos = [(d.temperatura, d._nombre_dia) for d in self.dias if d.temperatura is not None]
+        if not validos:
+            return "Sin datos"
+        max_temp, dia = max(validos)
+        return f"{dia} ({max_temp:.1f} °C)"
+
+# Programa principal POO
+def main_poo():
+    semana = SemanaClima()
+    semana.ingresar_temperaturas()
+    semana.mostrar_resumen()
+    
+    # Ejemplo de polimorfismo/herencia
+    semana_ext = SemanaClimaExtendida()
+    print("\nUsando clase extendida (herencia):")
+    # (Se podría volver a ingresar datos o reutilizar lógica)
+
+if __name__ == "__main__":
+    main_poo()

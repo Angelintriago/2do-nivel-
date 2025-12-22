@@ -1,0 +1,78 @@
+from abc import ABC, abstractmethod
+from datetime import datetime
+
+# Clase abstracta base
+class Vehiculo(ABC):
+    def __init__(self, matricula: str, marca: str, modelo: str, año: int):
+        self.matricula = matricula
+        self.marca = marca
+        self.modelo = modelo
+        self.año = año
+        self.disponible = True
+
+    @abstractmethod
+    def calcular_tarifa_diaria(self) -> float:
+        pass
+
+    def alquilar(self):
+        if self.disponible:
+            self.disponible = False
+            return True
+        return False
+
+    def devolver(self):
+        self.disponible = True
+
+    def __str__(self):
+        estado = "Disponible" if self.disponible else "Alquilado"
+        return f"{self.marca} {self.modelo} ({self.matricula}) - {estado}"
+
+
+# Herencia: clases concretas
+class Turismo(Vehiculo):
+    def __init__(self, matricula, marca, modelo, año, plazas: int):
+        super().__init__(matricula, marca, modelo, año)
+        self.plazas = plazas
+
+    def calcular_tarifa_diaria(self) -> float:
+        base = 50
+        return base + (self.plazas - 5) * 5  # Extra por plaza adicional
+
+
+class Furgoneta(Vehiculo):
+    def __init__(self, matricula, marca, modelo, año, carga_kg: int):
+        super().__init__(matricula, marca, modelo, año)
+        self.carga_kg = carga_kg
+
+    def calcular_tarifa_diaria(self) -> float:
+        return 80 + (self.carga_kg // 500) * 20  # Extra por cada 500 kg
+
+
+class Deportivo(Vehiculo):
+    def calcular_tarifa_diaria(self) -> float:
+        return 150  # Tarifa fija alta
+
+
+# Uso del sistema
+print("=== Sistema de Alquiler de Vehículos ===\n")
+
+coche1 = Turismo("1234ABC", "Seat", "Ibiza", 2023, 5)
+coche2 = Furgoneta("5678DEF", "Ford", "Transit", 2022, 1000)
+coche3 = Deportivo("9012GHI", "Porsche", "911", 2024)
+
+flota = [coche1, coche2, coche3]
+
+# Mostrar flota y tarifas
+for v in flota:
+    print(f"{v} | Tarifa diaria: {v.calcular_tarifa_diaria()} €")
+
+print()
+
+# Simular alquiler
+coche1.alquilar()
+print("Después de alquilar el turismo:")
+print(coche1)
+
+# Intentar alquilar uno ya alquilado
+if not coche1.alquilar():
+    print("No se pudo alquilar: ya está en uso.")

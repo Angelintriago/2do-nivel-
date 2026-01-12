@@ -1,0 +1,39 @@
+# Programa para calcular el área de un rectángulo y verificar si se trata de un cuadrado.
+# Este programa solicita al usuario el largo y ancho de un rectángulo, calcula su área
+# utilizando tipos de datos float para las dimensiones y el área, e incluye un valor
+# booleano para determinar si es un cuadrado. También maneja un mensaje de string
+# para mostrar el resultado.
+
+# Importamos el módulo math si fuera necesario, pero en este caso no lo usamos.
+
+def solicitar_dimensiones():
+    # Función para solicitar las dimensiones al usuario.
+    # Retorna dos valores float: largo y ancho.
+    largo = float(input("Ingrese el largo del rectángulo en metros: "))
+    ancho = float(input("Ingrese el ancho del rectángulo en metros: "))
+    return largo, ancho
+
+def calcular_area(largo, ancho):
+    # Función para calcular el área multiplicando largo por ancho.
+    # Utiliza tipos float para precisión en cálculos.
+    area = largo * ancho
+    return area
+
+def verificar_cuadrado(largo, ancho):
+    # Función para verificar si es un cuadrado comparando largo y ancho.
+    # Retorna un valor booleano: True si largo == ancho, False otherwise.
+    es_cuadrado = (largo == ancho)
+    return es_cuadrado
+
+# Programa principal
+largo_rectangulo, ancho_rectangulo = solicitar_dimensiones()
+area_calculada = calcular_area(largo_rectangulo, ancho_rectangulo)
+es_cuadrado = verificar_cuadrado(largo_rectangulo, ancho_rectangulo)
+
+# Preparar mensaje de salida usando string formatting.
+mensaje_resultado = f"El área del rectángulo es {area_calculada} metros cuadrados."
+if es_cuadrado:
+    mensaje_resultado += " Además, es un cuadrado."
+
+# Mostrar el resultado
+print(mensaje_resultado)

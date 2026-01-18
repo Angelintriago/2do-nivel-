@@ -1,0 +1,44 @@
+# Programa de demostración de conceptos de POO en Python
+# Clase base: Vehicle
+# Clase derivada: Car
+# Encapsulación: Atributo __year en Vehicle
+# Polimorfismo: Sobrescritura del método display_info y uso en función show_info
+
+class Vehicle:
+    def __init__(self, make, model, year):
+        self.make = make  # Atributo público
+        self.model = model  # Atributo público
+        self.__year = year  # Atributo encapsulado (privado)
+    
+    def get_year(self):
+        """Método getter para acceder al atributo encapsulado __year."""
+        return self.__year
+    
+    def display_info(self):
+        """Método para mostrar información del vehículo."""
+        print(f"Make: {self.make}, Model: {self.model}, Year: {self.get_year()}")
+
+class Car(Vehicle):
+    def __init__(self, make, model, year, doors):
+        super().__init__(make, model, year)  # Llamada al constructor de la clase base (herencia)
+        self.doors = doors  # Atributo adicional en la clase derivada
+    
+    def display_info(self):
+        """Sobrescritura del método display_info (polimorfismo)."""
+        super().display_info()  # Llamada al método de la clase base
+        print(f"Doors: {self.doors}")
+
+# Función para demostrar polimorfismo: acepta cualquier objeto de tipo Vehicle o derivado
+def show_info(vehicle):
+    vehicle.display_info()
+
+# Creación de instancias (objetos)
+vehicle = Vehicle("Generic", "Basic", 2000)
+car = Car("Toyota", "Corolla", 2020, 4)
+
+# Demostración de funcionalidad
+print("Información del Vehicle:")
+show_info(vehicle)
+
+print("\nInformación del Car:")
+show_info(car)

@@ -1,0 +1,74 @@
+# Ejemplo de implementación de constructores y destructores en Python
+# Autor: [ANGEl INTRIAGO ]
+# Fecha: [ 25 de enero ]
+# Descripción: Este programa demuestra el uso de constructores (__init__) y destructores (__del__) en clases de Python.
+# El constructor se llama automáticamente al crear una instancia de la clase y se usa para inicializar atributos.
+# El destructor se llama automáticamente cuando el objeto es destruido (por ejemplo, al salir del ámbito o al ser recolectado por el garbage collector),
+# y se puede usar para realizar limpieza de recursos, como cerrar archivos o conexiones.
+
+class Persona:
+    def __init__(self, nombre, edad):
+        """
+        Constructor de la clase Persona.
+        Se ejecuta automáticamente al crear una nueva instancia.
+        Inicializa los atributos 'nombre' y 'edad' del objeto.
+        """
+        self.nombre = nombre
+        self.edad = edad
+        print(f"Constructor llamado: Se ha creado una persona llamada {self.nombre} con edad {self.edad}.")
+
+    def __del__(self):
+        """
+        Destructor de la clase Persona.
+        Se ejecuta automáticamente cuando el objeto es destruido, por ejemplo, cuando ya no hay referencias a él.
+        En este caso, imprime un mensaje de limpieza para demostrar su activación.
+        Nota: El momento exacto en que se llama __del__ depende del garbage collector de Python, por lo que no siempre es predecible.
+        """
+        print(f"Destructor llamado: La persona {self.nombre} ha sido destruida. Limpieza de recursos completada.")
+
+    def presentarse(self):
+        """Método para que la persona se presente."""
+        print(f"Hola, me llamo {self.nombre} y tengo {self.edad} años.")
+
+
+class GestorArchivo:
+    def __init__(self, nombre_archivo):
+        """
+        Constructor de la clase GestorArchivo.
+        Abre un archivo en modo escritura y lo inicializa como atributo.
+        Demuestra inicialización de recursos en el constructor.
+        """
+        self.nombre_archivo = nombre_archivo
+        self.archivo = open(nombre_archivo, 'w')  # Abre el archivo
+        print(f"Constructor llamado: Archivo '{self.nombre_archivo}' abierto para escritura.")
+
+    def escribir(self, texto):
+        """Método para escribir texto en el archivo."""
+        self.archivo.write(texto + '\n')
+        print(f"Escrito en el archivo: {texto}")
+
+    def __del__(self):
+        """
+        Destructor de la clase GestorArchivo.
+        Cierra el archivo abierto para liberar recursos.
+        Esto demuestra una limpieza real en el destructor, aunque en la práctica es mejor usar context managers (with) para manejar archivos.
+        """
+        if hasattr(self, 'archivo') and self.archivo:
+            self.archivo.close()
+            print(f"Destructor llamado: Archivo '{self.nombre_archivo}' cerrado.")
+
+
+# Ejemplo de uso
+if __name__ == "__main__":
+    # Creando una instancia de Persona (se llama __init__)
+    persona1 = Persona("Juan", 30)
+    persona1.presentarse()
+
+    # Creando una instancia de GestorArchivo (se llama __init__)
+    gestor = GestorArchivo("ejemplo.txt")
+    gestor.escribir("Hola, mundo!")
+
+    # Al final del programa, las instancias se destruyen (se llaman los __del__)
+    # Nota: En algunos entornos, como scripts interactivos, __del__ podría no llamarse inmediatamente.
+    print("Fin del programa. Los destructores se llamarán pronto.")
+

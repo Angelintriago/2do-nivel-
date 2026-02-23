@@ -1,0 +1,212 @@
+# Clase Producto (sin cambios en su lógica principal)
+class Producto:
+    def __init__(self, id_producto, nombre, cantidad, precio):
+        self._id = id_producto
+        self._nombre = nombre
+        self._cantidad = cantidad
+        self._precio = precio
+
+    # Getters
+    def get_id(self):
+        return self._id
+
+    def get_nombre(self):
+        return self._nombre
+
+    def get_cantidad(self):
+        return self._cantidad
+
+    def get_precio(self):
+        return self._precio
+
+    # Setters
+    def set_nombre(self, nombre):
+        self._nombre = nombre
+
+    def set_cantidad(self, cantidad):
+        self._cantidad = cantidad
+
+    def set_precio(self, precio):
+        self._precio = precio
+
+    def __str__(self):
+        return f"ID: {self._id}, Nombre: {self._nombre}, Cantidad: {self._cantidad}, Precio: {self._precio:.2f}"
+
+
+# Clase Inventario mejorada con persistencia en archivo y manejo de excepciones
+class Inventario:
+    def __init__(self):
+        self._productos = []
+        self.cargar_desde_archivo()  # Carga automática al iniciar
+
+    def guardar_en_archivo(self):
+        """Guarda todo el inventario en inventario.txt. Devuelve True si tuvo éxito."""
+        try:
+            with open("inventario.txt", "w", encoding="utf-8") as archivo:
+                for p in self._productos:
+                    archivo.write(
+                        f"{p.get_id()}|{p.get_nombre()}|{p.get_cantidad()}|{p.get_precio():.2f}\n"
+                    )
+            return True
+        except PermissionError:
+            print("Error: No tienes permisos para escribir en 'inventario.txt'.")
+            return False
+        except Exception as e:
+            print(f"Error inesperado al guardar en el archivo: {e}")
+            return False
+
+    def cargar_desde_archivo(self):
+        """Carga los productos desde inventario.txt al iniciar el programa."""
+        try:
+            with open("inventario.txt", "r", encoding="utf-8") as archivo:
+                for linea in archivo:
+                    linea = linea.strip()
+                    if linea:
+                        partes = linea.split("|")
+                        if len(partes) == 4:
+                            try:
+                                id_prod = partes[0].strip()
+                                nombre = partes[1].strip()
+                                cantidad = int(partes[2].strip())
+                                precio = float(partes[3].strip())
+                                producto = Producto(id_prod, nombre, cantidad, precio)
+                                self._productos.append(producto)
+                            except ValueError:
+                                print(f"Advertencia: Línea con datos inválidos ignorada: {linea}")
+        except FileNotFoundError:
+            print("Archivo 'inventario.txt' no encontrado. Se creará uno nuevo al realizar la primera modificación.")
+        except PermissionError:
+            print("Error: No tienes permisos para leer 'inventario.txt'.")
+        except Exception as e:
+            print(f"Error al cargar el inventario desde archivo: {e}")
+
+    def añadir_producto(self, producto):
+        """Añade un producto (solo en memoria). Devuelve True si se añadió."""
+        for p in self._productos:
+            if p.get_id() == producto.get_id():
+                print("Error: El ID ya existe en el inventario.")
+                return False
+        self._productos.append(producto)
+        return True
+
+    def eliminar_por_id(self, id_producto):
+        """Elimina un producto por ID (solo en memoria). Devuelve True si se eliminó."""
+        for i, p in enumerate(self._productos):
+            if p.get_id() == id_producto:
+                del self._productos[i]
+                return True
+        print("Error: Producto no encontrado.")
+        return False
+
+    def actualizar_por_id(self, id_producto, nueva_cantidad=None, nuevo_precio=None):
+        """Actualiza cantidad y/o precio (solo en memoria). Devuelve True si se encontró el producto."""
+        for p in self._productos:
+            if p.get_id() == id_producto:
+                if nueva_cantidad is not None:
+                    p.set_cantidad(nueva_cantidad)
+                if nuevo_precio is not None:
+                    p.set_precio(nuevo_precio)
+                return True
+        print("Error: Producto no encontrado.")
+        return False
+
+    def buscar_por_nombre(self, nombre):
+        resultados = []
+        nombre_lower = nombre.lower()
+        for p in self._productos:
+            if nombre_lower in p.get_nombre().lower():
+                resultados.append(p)
+        return resultados
+
+    def mostrar_todos(self):
+        if not self._productos:
+            print("El inventario está vacío.")
+        else:
+            for p in self._productos:
+                print(p)
+
+
+# Menú actualizado con notificaciones de operaciones de archivo
+def menu():
+    inventario = Inventario()  # Aquí se carga automáticamente el archivo
+
+    while True:
+        print("\nMenú de Gestión de Inventarios:")
+        print("1. Añadir nuevo producto")
+        print("2. Eliminar producto por ID")
+        print("3. Actualizar cantidad o precio por ID")
+        print("4. Buscar producto(s) por nombre")
+        print("5. Mostrar todos los productos")
+        print("6. Salir")
+
+        opcion = input("Seleccione una opción: ")
+
+        if opcion == "1":
+            id_producto = input("Ingrese ID único: ")
+            nombre = input("Ingrese nombre: ")
+            try:
+                cantidad = int(input("Ingrese cantidad: "))
+                precio = float(input("Ingrese precio: "))
+            except ValueError:
+                print("Error: Cantidad y precio deben ser números.")
+                continue
+
+            producto = Producto(id_producto, nombre, cantidad, precio)
+            if inventario.añadir_producto(producto):
+                print("Producto añadido exitosamente.")
+                if inventario.guardar_en_archivo():
+                    print("✅ Cambios guardados exitosamente en el archivo 'inventario.txt'.")
+                # Si falla, el error ya se mostró en guardar_en_archivo()
+
+        elif opcion == "2":
+            id_producto = input("Ingrese ID a eliminar: ")
+            if inventario.eliminar_por_id(id_producto):
+                print("Producto eliminado exitosamente.")
+                if inventario.guardar_en_archivo():
+                    print("✅ Cambios guardados exitosamente en el archivo 'inventario.txt'.")
+                # Error de archivo ya notificado en guardar_en_archivo()
+
+        elif opcion == "3":
+            id_producto = input("Ingrese ID a actualizar: ")
+            nueva_cantidad_str = input("Ingrese nueva cantidad (deje en blanco si no cambia): ")
+            nuevo_precio_str = input("Ingrese nuevo precio (deje en blanco si no cambia): ")
+
+            nueva_cantidad = int(nueva_cantidad_str) if nueva_cantidad_str.strip() else None
+            nuevo_precio = float(nuevo_precio_str) if nuevo_precio_str.strip() else None
+
+            if inventario.actualizar_por_id(id_producto, nueva_cantidad, nuevo_precio):
+                print("Producto actualizado exitosamente.")
+                if inventario.guardar_en_archivo():
+                    print("✅ Cambios guardados exitosamente en el archivo 'inventario.txt'.")
+                # Error de archivo ya notificado en guardar_en_archivo()
+
+        elif opcion == "4":
+            nombre = input("Ingrese nombre a buscar: ")
+            resultados = inventario.buscar_por_nombre(nombre)
+            if resultados:
+                print("Productos encontrados:")
+                for p in resultados:
+                    print(p)
+            else:
+                print("No se encontraron productos.")
+
+        elif opcion == "5":
+            print("Todos los productos:")
+            inventario.mostrar_todos()
+
+        elif opcion == "6":
+            print("Guardando cambios finales antes de salir...")
+            if inventario.guardar_en_archivo():
+                print("✅ Inventario guardado exitosamente en el archivo 'inventario.txt'.")
+            else:
+                print("⚠️  No se pudo guardar el inventario (los cambios en memoria se perderán).")
+            print("Saliendo del sistema...")
+            break
+
+        else:
+            print("Opción inválida. Intente nuevamente.")
+
+
+# Iniciar el programa
+if __name__ == "__main__":
+    menu()

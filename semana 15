@@ -1,0 +1,186 @@
+import tkinter as tk
+from tkinter import ttk, messagebox
+from datetime import datetime
+
+class TodoApp:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("📋 Mi Lista de Tareas")
+        self.root.geometry("600x500")
+        self.root.configure(bg="#f0f0f0")
+        
+        # Lista para almacenar las tareas (texto, completada)
+        self.tasks = []
+        
+        self.setup_ui()
+        
+    def setup_ui(self):
+        # Título
+        title_label = tk.Label(self.root, text="Lista de Tareas", 
+                              font=("Helvetica", 18, "bold"), 
+                              bg="#f0f0f0", fg="#333")
+        title_label.pack(pady=10)
+        
+        # Frame para entrada y botón Añadir
+        input_frame = tk.Frame(self.root, bg="#f0f0f0")
+        input_frame.pack(pady=10, padx=20, fill="x")
+        
+        # Campo de entrada
+        self.entry = tk.Entry(input_frame, font=("Helvetica", 12), width=40)
+        self.entry.pack(side="left", padx=(0, 10), fill="x", expand=True)
+        self.entry.bind("<Return>", self.add_task_event)  # Enter para añadir
+        
+        # Botón Añadir
+        add_button = tk.Button(input_frame, text="Añadir Tarea", 
+                              command=self.add_task, 
+                              bg="#4CAF50", fg="white", 
+                              font=("Helvetica", 10, "bold"),
+                              padx=15, pady=5)
+        add_button.pack(side="right")
+        
+        # Frame para la lista de tareas
+        list_frame = tk.Frame(self.root, bg="#f0f0f0")
+        list_frame.pack(pady=10, padx=20, fill="both", expand=True)
+        
+        # Listbox con Scrollbar
+        scrollbar = tk.Scrollbar(list_frame)
+        scrollbar.pack(side="right", fill="y")
+        
+        self.task_listbox = tk.Listbox(list_frame, 
+                                      font=("Helvetica", 11),
+                                      height=15,
+                                      selectmode="single",
+                                      yscrollcommand=scrollbar.set,
+                                      activestyle="none")
+        self.task_listbox.pack(fill="both", expand=True)
+        scrollbar.config(command=self.task_listbox.yview)
+        
+        # Doble clic para marcar como completada
+        self.task_listbox.bind("<Double-Button-1>", self.toggle_complete)
+        
+        # Frame para botones de acción
+        button_frame = tk.Frame(self.root, bg="#f0f0f0")
+        button_frame.pack(pady=10, padx=20, fill="x")
+        
+        # Botón Marcar como Completada
+        complete_button = tk.Button(button_frame, text="✓ Marcar Completada", 
+                                   command=self.mark_complete,
+                                   bg="#2196F3", fg="white",
+                                   font=("Helvetica", 10, "bold"),
+                                   padx=12, pady=8)
+        complete_button.pack(side="left", padx=5)
+        
+        # Botón Eliminar
+        delete_button = tk.Button(button_frame, text="🗑 Eliminar Tarea", 
+                                 command=self.delete_task,
+                                 bg="#f44336", fg="white",
+                                 font=("Helvetica", 10, "bold"),
+                                 padx=12, pady=8)
+        delete_button.pack(side="left", padx=5)
+        
+        # Botón Limpiar Completadas
+        clear_button = tk.Button(button_frame, text="Limpiar Completadas", 
+                                command=self.clear_completed,
+                                bg="#FF9800", fg="white",
+                                font=("Helvetica", 10, "bold"),
+                                padx=12, pady=8)
+        clear_button.pack(side="right", padx=5)
+        
+        # Estado
+        self.status_label = tk.Label(self.root, text="0 tareas | 0 completadas", 
+                                    bg="#f0f0f0", fg="#666",
+                                    font=("Helvetica", 9))
+        self.status_label.pack(pady=5)
+        
+        # Instrucciones
+        instr = tk.Label(self.root, 
+                        text="Doble clic en una tarea para marcarla como completada • Enter para añadir",
+                        bg="#f0f0f0", fg="#888", font=("Helvetica", 9))
+        instr.pack(pady=5)
+    
+    def add_task(self):
+        task_text = self.entry.get().strip()
+        if not task_text:
+            messagebox.showwarning("Advertencia", "Por favor escribe una tarea")
+            return
+        
+        # Añadir tarea: (texto, completada, fecha)
+        self.tasks.append([task_text, False, datetime.now().strftime("%H:%M")])
+        self.update_listbox()
+        self.entry.delete(0, tk.END)
+        self.update_status()
+    
+    def add_task_event(self, event):
+        self.add_task()
+    
+    def update_listbox(self):
+        self.task_listbox.delete(0, tk.END)
+        
+        for i, (task, completed, time) in enumerate(self.tasks):
+            prefix = "✅ " if completed else "⬜ "
+            display_text = f"{prefix} {task}  ({time})"
+            self.task_listbox.insert(tk.END, display_text)
+            
+            # Cambiar color según estado
+            if completed:
+                self.task_listbox.itemconfig(i, {'fg': 'gray'})
+            else:
+                self.task_listbox.itemconfig(i, {'fg': 'black'})
+    
+    def toggle_complete(self, event=None):
+        """Marcar/desmarcar con doble clic"""
+        selection = self.task_listbox.curselection()
+        if not selection:
+            return
+        
+        index = selection[0]
+        self.tasks[index][1] = not self.tasks[index][1]  # Cambiar estado
+        self.update_listbox()
+        self.update_status()
+    
+    def mark_complete(self):
+        selection = self.task_listbox.curselection()
+        if not selection:
+            messagebox.showwarning("Advertencia", "Selecciona una tarea para marcar como completada")
+            return
+        
+        index = selection[0]
+        self.tasks[index][1] = True
+        self.update_listbox()
+        self.update_status()
+    
+    def delete_task(self):
+        selection = self.task_listbox.curselection()
+        if not selection:
+            messagebox.showwarning("Advertencia", "Selecciona una tarea para eliminar")
+            return
+        
+        if messagebox.askyesno("Confirmar", "¿Estás seguro de eliminar esta tarea?"):
+            index = selection[0]
+            del self.tasks[index]
+            self.update_listbox()
+            self.update_status()
+    
+    def clear_completed(self):
+        if not any(task[1] for task in self.tasks):
+            messagebox.showinfo("Info", "No hay tareas completadas para limpiar")
+            return
+        
+        if messagebox.askyesno("Confirmar", "¿Eliminar todas las tareas completadas?"):
+            self.tasks = [task for task in self.tasks if not task[1]]
+            self.update_listbox()
+            self.update_status()
+    
+    def update_status(self):
+        total = len(self.tasks)
+        completed = sum(1 for task in self.tasks if task[1])
+        self.status_label.config(
+            text=f"{total} tareas | {completed} completadas"
+        )
+
+
+# ====================== EJECUCIÓN ======================
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = TodoApp(root)
+    root.mainloop()
